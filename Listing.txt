@@ -1,79 +1,57 @@
-from tkinter import *
 import random
-import tkinter.messagebox as messagebox
+import tkinter as tk
 
-class RandomNumberGenerator:
+# Функція, яка генерує псевдовипадкове число з використанням введених параметрів
+def generate_random_number(length, digits):
+    # Перевірка вхідних даних
+    if not length.isdigit() or not digits.isdigit():
+        return "Помилка: Введіть числові значення для довжини та цифр"
+    length = int(length)
+    digits = int(digits)
+    if length <= 0 or digits <= 0 or digits > 10:
+        return "Помилка: Неприпустимі значення довжини та цифр"
 
-    def __init__(self, master):
-        self.master = master
-        master.title("Random Number Generator")
+    # Генерування псевдовипадкового числа
+    number = ""
+    for i in range(length):
+        number += str(random.randint(0, digits-1))
+    return number
 
-        self.num_digits_label = Label(master, text="Enter the number of digits:")
-        self.num_digits_label.pack()
+# Функція, яка викликається при натисканні кнопки "Згенерувати"
+def generate_button_clicked():
+    length = length_entry.get()
+    digits = digits_entry.get()
+    result = generate_random_number(length, digits)
+    result_label.config(text=result)
+    result_text.config(state=tk.NORMAL)
+    result_text.delete("1.0", tk.END)
+    result_text.insert(tk.END, result)
+    result_text.config(state=tk.DISABLED)
+    scrollbar.config(command=result_text.yview)
 
-        self.num_digits_entry = Entry(master)
-        self.num_digits_entry.pack()
+# Створення головного вікна програми
+root = tk.Tk()
+root.title("Генератор псевдовипадкового числа")
 
-        self.digits_label = Label(master, text="Select the digits to use:")
-        self.digits_label.pack()
+# Додавання елементів на головне вікно
+length_label = tk.Label(root, text="Довжина числа:")
+length_label.pack()
+length_entry = tk.Entry(root)
+length_entry.pack()
 
-        self.digits_frame = Frame(master)
-        self.digits_frame.pack()
+digits_label = tk.Label(root, text="Цифри (від 2 до 10):")
+digits_label.pack()
+digits_entry = tk.Entry(root)
+digits_entry.pack()
 
-        self.digits = {}
-        for i in range(10):
-            self.digits[i] = IntVar()
-            checkbutton = Checkbutton(self.digits_frame, text=str(i), variable=self.digits[i])
-            checkbutton.pack(side=LEFT)
+generate_button = tk.Button(root, text="Згенерувати", command=generate_button_clicked)
+generate_button.pack()
 
-        self.generate_button = Button(master, text="Generate", command=self.generate_number)
-        self.generate_button.pack()
+result_label = tk.Label(root, text="Результат:")
 
-        self.clear_button = Button(master, text="Clear", command=self.clear_data)
-        self.clear_button.pack()
+result_text = tk.Text(root, height=1, state=tk.DISABLED)
+result_text.pack(side=tk.LEFT, fill=tk.Y)
+scrollbar = tk.Scrollbar(root, command=result_text.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-    def generate_number(self):
-        num_digits = self.num_digits_entry.get()
-
-        # Check if the input is a valid number
-        if not num_digits.isnumeric():
-            error_message = "Invalid input: Please enter a number"
-            messagebox.showerror("Error", error_message)
-            return
-
-        num_digits = int(num_digits)
-
-        selected_digits = [str(i) for i in self.digits if self.digits[i].get()]
-
-        if not selected_digits:
-            error_message = "Please select at least one digit"
-            messagebox.showerror("Error", error_message)
-            return
-
-        number = "".join(random.choices(selected_digits, k=num_digits))
-
-        result_window = Toplevel(self.master)
-        result_window.title("Result")
-
-        result_label = Label(result_window, text="Generated number: " + number)
-        result_label.pack()
-
-        copy_button = Button(result_window, text="Copy", command=lambda: self.copy_to_clipboard(number))
-        copy_button.pack()
-
-    def copy_to_clipboard(self, text):
-        self.master.clipboard_clear()
-        self.master.clipboard_append(text)
-        self.master.update()
-
-    def clear_data(self):
-        self.num_digits_entry.delete(0, END)
-        for i in self.digits:
-            self.digits[i].set(0)
-
-    def exit(self):
-        self.master.destroy()
-
-root = Tk()
-random_number_generator = RandomNumberGenerator(root)
 root.mainloop()
